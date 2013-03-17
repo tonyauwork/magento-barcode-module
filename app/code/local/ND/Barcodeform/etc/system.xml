@@ -1,0 +1,63 @@
+<?xml version="1.0"?>
+<config>
+    <tabs>
+        <nd_extensions translate="label" module="barcodeform">
+            <label>ND Extensions</label>
+            <sort_order>210</sort_order>
+        </nd_extensions>
+    </tabs>
+    <sections>
+        <barcodeform_options translate="label" module="barcodeform">
+            <class>separator-top</class>
+            <label>Barcode Form</label>
+            <tab>nd_extensions</tab>
+            <sort_order>500</sort_order>
+            <show_in_default>1</show_in_default>
+            <show_in_website>1</show_in_website>
+            <show_in_store>1</show_in_store>
+		   <groups>
+			<general translate="label">
+				<label>Barcode Form</label>
+				<frontend_type>text</frontend_type>
+				<sort_order>10</sort_order>
+				<show_in_default>1</show_in_default>
+				<show_in_website>1</show_in_website>
+				<show_in_store>1</show_in_store>
+				<fields>
+					<companyname translate="label comment">
+						<label>Company Name:</label>
+						<frontend_type>text</frontend_type>
+						<sort_order>20</sort_order>
+						<show_in_default>1</show_in_default>
+						<show_in_website>1</show_in_website>
+						<show_in_store>1</show_in_store>
+						<comment>It will show your company name in the the form.</comment>
+					</companyname>							
+					
+					<showbarcode translate="label comment">
+						<label>Show barcode image on form:</label>
+						<frontend_type>select</frontend_type>
+						<source_model>adminhtml/system_config_source_yesno</source_model>
+						<sort_order>55</sort_order>
+						<show_in_default>1</show_in_default>
+						<show_in_website>1</show_in_website>
+						<show_in_store>1</show_in_store>
+						<comment>Set to YES to show the product code39 barcode on the form.</comment>
+					</showbarcode>
+					
+					<printbarcode translate="label comment">
+						<label>Print barcode for delivery:</label>
+						<frontend_type>select</frontend_type>
+						<source_model>adminhtml/system_config_source_yesno</source_model>
+						<sort_order>60</sort_order>
+						<show_in_default>1</show_in_default>
+						<show_in_website>1</show_in_website>
+						<show_in_store>1</show_in_store>
+						<comment>Set to YES to show the product barcode under the form.It just for the delivery</comment>
+					</printbarcode>
+				</fields>						
+			</general>
+		</groups>
+        </barcodeform_options>
+    </sections>
+ </config>

@@ -1,0 +1,338 @@
+<?php
+	$order = $this->getOrder();
+	$orderStoreID=$order->getStoreId();	
+	
+	if ($order->hasInvoices()) {
+		$formIdText="Invoice";
+		foreach ($order->getInvoiceCollection() as $_eachInvoice) {
+			$invoiceId = $_eachInvoice->getIncrementId();
+		}
+	} else {
+		$formIdText="Order";
+		$invoiceId = $order->getIncrementId();
+	}
+	$configs = Mage::getStoreConfig('barcodeform_options/general',(int)$orderStoreID);
+	$companyname=$configs['companyname'];
+	$showbarcode=$configs['showbarcode'];
+	
+	//the QR barcode include all infomation of the order
+	$allinfoInQR = '{"orderid":' . $invoiceId ."," 
+		.'"mail":' . $order->getCustomerEmail() ."," 
+		.'"shippingaddr":' . $order->getShippingAddress()->format('html')."," 
+		.'"paymeth":' . $order->getPayment()->getMethodInstance()->getTitle() ."," 
+		.'"deliper":' . $order->getShippingDescription() ."," ;
+		
+	$items = $order->getAllItems();	
+	foreach($items as $item) {
+		if ($item->getParentItem()) continue;
+		
+		$product = Mage::getModel('catalog/product')->load($item->getProductId());
+		$allinfoInQR = $allinfoInQR . '{"sku":' . $item->getSku() . ','
+			. '"price":' . $order->formatPriceTxt($item->getPrice()) . ','
+			. '"qty":' . number_format($item->getQtyOrdered(), 0) . '},';
+	}
+	
+	$allinfoInQR = $allinfoInQR . "}";
+	
+	//echo $allinfoInQR ;
+	
+?>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Content-Language" content="utf-8" />
+<meta name="robots" content="all" />
+<meta name="author" content="Tencent-ISRD" />
+<meta name="Copyright" content="Tencent" />
+<title><?php echo $formIdText. " - ". $order->getIncrementId(); ?></title>
+
+<style>
+	input.txtUnderline {
+		border:none;
+		border-bottom:1px #000000 dashed;
+		width:80%;
+		Background-Color: transparent;
+	}
+	input.txtBlank {
+		border:none;
+		border-bottom:1px #eeeeee dashed;
+		width:96%;
+		height:18px;
+		Background-Color: transparent;
+	}
+	table.tBig {
+		border-top:1px #000000 solid;
+		border-left:1px #000000 solid;
+		background-color:#FFFFFF;
+	}
+	td {
+		border-bottom:1px #000000 solid;
+		border-right:1px #000000 solid;
+		font-size:12px;
+		/*color:#000000;*/
+	}
+	td.noRight {
+		border-right:none;
+	}
+	td.noBottom {
+		border-bottom:none;
+	}
+	textarea {
+		border:1px #dddddd dashed;
+		width:98%;
+		height:60px;
+		overflow:auto;
+	}
+	
+	
+	@media screen {
+		#printFooter {
+			display: none;
+		}
+	}
+	
+	@media print {
+		#printFooter {
+			position: fixed;
+			bottom: 0;
+		}
+	}
+	.option-menu {
+		padding: 8px;
+		background: #eee;
+		font-size: 10px;
+	}
+	
+	.button{
+		font-size:16px; 
+		color:red; 
+		width: 80px; 
+		height: 40px;
+	}
+	
+	.tableRow {
+		background: none;
+	}
+	.alt TD { background: #eee; }
+</style>
+
+<style media="print" type="text/css">
+	.wrapper {
+		margin: 0;
+	}
+	.option-menu {
+		display: none;
+	}
+</style>
+
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+</head>
+
+
+<body>
+
+<div class="option-menu">
+   <p>
+	<input type="button" value= "Print" class="button" onclick="window.print(); return false;">
+  </p>
+</div>
+<br>
+
+<table width ='95%'>
+	<caption><?php echo $companyname ?><br></caption>
+</table>
+<br>
+<table width="95%"  border="0" cellspacing="0" cellpadding="0" class="tBig" id="tblsr">	
+	<tr>
+		<td>
+			<table width="100%"   border="0" cellspacing="0" cellpadding="0" class="tBottom">
+				<tr>
+					<td width="32%" style="PADDING:0px 0px 0px 8px;" class="noBottom noRight" >			
+						
+						<p><?php echo $formIdText . "  Number: <strong>". $invoiceId; ?></strong></p>
+					</td>
+					
+					<td width="23%" style="PADDING:0px 0px 0px 8px;" class="noBottom noRight">
+						<p><strong>Customer:</strong></p>
+					</td>		
+				
+					<td width="23%" style="PADDING0px 0px 0px 8px;" class="noBottom noRight">
+						<p><strong>Delivery Address:</strong></p>
+					</td>    
+
+
+					<td rowspan =2 width="*" style="PADDING:0px;" class="noBottom noRight">
+					<img src="<?php echo Mage::helper("barcodeform")->Qr($allinfoInQR) ?>">
+					</td>
+				</tr>
+				
+				<tr>
+					<td width="32%" valign="top" style="PADDING:0px 0px 0px 8px;" class="noBottom noRight" >		
+					Date:<br>
+					<strong>&nbsp;
+						<?php echo date("d.m.Y");  ?>
+					</strong><br>
+					Payment Method:<br>
+					<strong>&nbsp;
+						<?php echo $order->getPayment()->getMethodInstance()->getTitle();  ?>
+					</strong><br>
+					Delivery per:<br>
+					<strong>&nbsp;
+						<?php echo $order->getShippingDescription()  ?>
+					</strong><br>
+					
+					</td>
+					
+					<td width="23%"  valign="top" style="PADDING:0px 0px 0px 8px;" class="noBottom noRight">
+						<?php echo $order->getBillingAddress()->format('html'); ?>
+						<p>
+							<a href="mailto: <?php echo $order->getCustomerEmail() ?>">
+								<u><?php echo $order->getCustomerEmail() ?></u>
+							</a>
+						</p>
+					</td>
+					
+					<td width="23%"  valign="top" style="PADDING:0px 0px 0px 8px;" class="noBottom noRight">
+						<?php echo $order->getShippingAddress()->format('html'); ?>			
+					</td>		
+				</tr>
+			</table>
+		</td>
+	
+	<tr>
+		<td>
+			<table width="100%"   border="0" cellspacing="0" cellpadding="6" class="tBottom">
+				<tr align="left" class="tdBottom">				
+					<td class="noBottom noRight"><strong>Item Code</strong></td>
+					<?php if ($showbarcode): ?>
+					<td class="noBottom noRight"><strong>Barcode</strong></td>
+					<?php endif; ?>
+					<td class="noBottom noRight"><strong>Description</strong></td>
+					<td class="noBottom noRight"><strong>Quantity</strong></td>
+					<td align="right" class="noBottom noRight"><strong>Unit Price</strong></td>
+					<td align="right" class="noBottom noRight"><strong>Total</strong></td>
+				</tr>
+				<?php
+				
+				$i = 0;
+				foreach($items as $item){
+					if ($item->getParentItem()) continue;
+					
+					$product = Mage::getModel('catalog/product')->load($item->getProductId());
+					
+					
+					echo '<tr class="noBottom noRight tableRow '. ($i%2==0 ? "" : "alt") . '">';
+					echo '	<td class="noBottom noRight" valign="top">' . $item->getSku() . '</td>';					
+					if ($showbarcode)
+					{
+						echo '	<td class="noBottom noRight" valign="top">';
+						$barcode = $product->getData('myattribcode');
+						if ($barcode){
+							echo '<img src="';
+							echo 	Mage::helper("barcodeform")->Code39($barcode);
+							echo '">';
+						}					
+						echo'	</td>';
+					}
+					echo '	<td class="noBottom noRight" valign="top">';
+					echo 		$item->getName();
+
+						if ($options = $item->getProductOptions()) {			
+							$result = array();			
+							if (isset($options['options'])) {
+								$result = array_merge($result, $options['options']);
+							}
+							if (isset($options['additional_options'])) {
+								$result = array_merge($result, $options['additional_options']);
+							}
+							if (!empty($options['attributes_info'])) {
+								$result = array_merge($options['attributes_info'], $result);
+							}
+							
+							// loop and print
+							foreach ($result as $option) {
+								echo "<br /><em>" . $option["label"] . ":</em>&nbsp;&nbsp;" . $option["value"];
+							}
+						}
+					echo '	</td>';
+					echo '	<td class="noBottom noRight" valign="top" align="">';
+					echo 		number_format($item->getQtyOrdered(), 0);
+					echo '	</td>';
+					echo '	<td class="noBottom noRight" align="right" valign="top">';
+					echo '		<b>' . $order->formatPriceTxt($item->getPrice()) .  '</b>';
+					echo '	</td>';
+					echo '	<td class="noBottom noRight" align="right" valign="top">';
+					echo '		<b>' . $order->formatPriceTxt($item->getRowTotal()) . '</b>';
+					echo '	</td>';
+					echo '</tr>';
+				  $i++;
+				}
+				?>
+				
+				<tr>
+					<td align="right" colspan="8" class="noBottom noRight">
+					<table border="0" cellspacing="0" cellpadding="0" class="noBottom noRight">
+						<tr align="right" class="noBottom noRight">
+							<td align="right"  class="noBottom noRight">Subtotal&nbsp;&nbsp;</td>
+							<td class="noBottom noRight">
+								<strong><?php echo $order->formatPriceTxt($order->getSubtotal()) ?>
+								</strong>
+							</td>
+						</tr>
+						
+						<tr align="right" >
+							<td align="right"  class="noRight">
+								<?php echo $order->getShippingDescription() ?>&nbsp;&nbsp;
+							</td>
+							<td class="noRight">
+								<strong><?php echo $order->formatPriceTxt($order->getShippingAmount()) ?>
+								</strong>
+							</td>
+						</tr>       
+   
+						<tr align="right" >
+							<td align="right" class="noBottom noRight"><strong>Total</strong>&nbsp;&nbsp;</td>
+							<td class="noBottom noRight">
+								<strong><?php echo $order->formatPriceTxt($order->getGrandTotal()) ?>
+								</strong>
+							</td>
+						</tr>
+					</table>
+					</td>
+				</tr>
+			</table>
+		</td>
+	</tr>
+</tr> 
+</table>
+
+<br>
+<br>
+<hr size="1" noshade="noshade" style="border:1px #cccccc dotted;">
+<?php
+//if ($configs['printbarcode'])
+{
+	echo '<table cellpadding="8">';
+	foreach($items as $item) {
+		if ($item->getParentItem()) continue;
+		$barcode = $product->getData('myattribcode');
+		if ($barcode){
+			echo "<tr>";
+			for($i=0; $i<4; $i++){
+				echo '	<td class="noBottom noRight" valign="top">';
+				echo '<img src="';
+				echo 	Mage::helper("barcodeform")->Code39($barcode);
+				echo '">';				
+				echo'	</td>';
+			}
+			echo "</tr>";
+		}
+	}
+}
+?>
+
+</body>
+</html>
+ 

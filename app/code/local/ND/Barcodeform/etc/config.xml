@@ -1,0 +1,91 @@
+<?xml version="1.0"?>
+<config>
+	<modules>
+		<ND_Barcodeform>
+			<version>0.1.0</version>
+		</ND_Barcodeform>
+	</modules>
+	<global>
+		<models>
+			<barcodeform>
+				<class>ND_Barcodeform_Model</class>
+			</barcodeform>  
+		</models>
+		
+		<resources>
+			<barcodeform_setup>
+				<setup>
+					<module>ND_Barcodeform</module>
+					<class>ND_Barcodeform_Model_Resource_Eav_Mysql4_Setup</class>
+				</setup>
+
+				<connection>
+					<use>core_setup</use>
+				</connection>
+			</barcodeform_setup>
+		 
+			<barcodeform_write>
+			  <connection>
+				<use>core_write</use>
+			  </connection>
+			</barcodeform_write>
+			<barcodeform_read>
+			  <connection>
+				<use>core_read</use>
+			  </connection>
+			</barcodeform_read>
+		</resources>
+		
+		<helpers>
+			<barcodeform>
+				<class>ND_Barcodeform_Helper</class>
+			</barcodeform>
+		</helpers>
+		<blocks>
+			<barcodeform>
+				<class>ND_Barcodeform_Block</class>
+			</barcodeform>
+		<adminhtml>
+			<rewrite>
+				<sales_order_view>ND_Barcodeform_Block_Sales_Order_View</sales_order_view>
+			</rewrite>
+			<rewrite>
+				<sales_order_grid>ND_Barcodeform_Block_Sales_Order_Grid</sales_order_grid>
+			</rewrite>		
+		</adminhtml>
+		</blocks>
+	</global>
+	<admin>
+		<routers>
+			<barcodeform>
+				<use>admin</use>
+				<args>
+					<module>ND_Barcodeform</module>
+					<frontName>barcodeform</frontName>
+				</args>
+			</barcodeform>
+		</routers>
+	</admin>
+	
+	<adminhtml>
+		<acl>
+			<resources>
+				<admin>
+					<children>
+						<system>
+							<children>
+								<config>
+									<children>
+										<barcodeform_options>
+											<title>Barcode Form by Tony Chen</title>
+										</barcodeform_options>
+									</children>
+								</config>
+							</children>
+						</system>
+					</children>
+				</admin>
+			</resources>
+		</acl>
+	</adminhtml>
+</config>

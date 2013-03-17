@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+
+<config>
+    <modules>
+        <ND_Barcodeform>
+            <active>true</active>
+            <codePool>local</codePool>
+        </ND_Barcodeform>
+    </modules>
+</config>
